@@ -120,6 +120,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-maps:$playServicesMapsVersion"
 
     // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:$firebaseBomVersion"))
+    implementation "com.google.firebase:firebase-auth-ktx:"
     implementation "com.firebaseui:firebase-ui-auth:$firebaseUiAuthVersion"
-    implementation "com.google.firebase:firebase-auth-ktx:$firebaseAuthKtxVersion"
 }
