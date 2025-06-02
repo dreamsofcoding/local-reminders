@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "106012107942",
+    "project_id": "project4-f247a",
+    "storage_bucket": "project4-f247a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:106012107942:android:31fdbee79e5078de6e4067",
+        "android_client_info": {
+          "package_name": "com.udacity.project4"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "106012107942-0c9p1fpmopbddbt7va3i26o4q2flk5e7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.udacity.project4",
+            "certificate_hash": "5a50ac4d7563aae9c4f942a91a9931cfc3e86cda"
+          }
+        },
+        {
+          "client_id": "106012107942-eiplvneucha7kckatci2scgaiakil5ej.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7t8nBYyOTsuhd6qviiGZ6XqDqpLBHx_w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "106012107942-eiplvneucha7kckatci2scgaiakil5ej.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
