@@ -7,13 +7,6 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
-def props = new Properties()
-def localPropsFile = rootProject.file("local.properties")
-if (localPropsFile.exists()) {
-    props.load(new FileInputStream(localPropsFile))
-}
-def mapsApiKey = props.getProperty("MAPS_API_KEY") ?: ""
-
 android {
     namespace 'com.udacity.project4'
     compileSdk 35
@@ -33,7 +26,6 @@ android {
             minifyEnabled = true
             shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            manifestPlaceholders = [ GOOGLE_MAPS_API_KEY: props.getProperty("MAPS_API_KEY_RELEASE") ?: "" ]
         }
 
         debug {
@@ -41,7 +33,6 @@ android {
             minifyEnabled = false
             shrinkResources = false
             resValue("string", "app_name", "Location Reminder Dev")
-            manifestPlaceholders = [ GOOGLE_MAPS_API_KEY: props.getProperty("MAPS_API_KEY_DEBUG") ?: "" ]
         }
     }
     buildFeatures {
