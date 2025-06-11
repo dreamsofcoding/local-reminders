@@ -32,8 +32,6 @@ class AuthenticationActivity : AppCompatActivity() {
         } else {
             startSignInFlow()
         }
-        // TODO: a bonus is to customize the sign in flow to look nice using :
-        //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
     }
 
     private fun startSignInFlow() {
@@ -52,7 +50,7 @@ class AuthenticationActivity : AppCompatActivity() {
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
-        if (result.resultCode == RESULT_OK) {
+        if (result.resultCode == RESULT_OK || FirebaseAuth.getInstance().currentUser != null) {
             navigateToReminders()
         } else {
             Toast.makeText(
