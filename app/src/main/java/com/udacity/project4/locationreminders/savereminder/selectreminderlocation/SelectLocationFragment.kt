@@ -1,20 +1,39 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SelectLocationFragment : BaseFragment() {
+class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     // Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private var map: GoogleMap? = null
+    private var selectedLatLng: LatLng? = null
+    private var selectedLocationName: String? = null
+
+    private val LOCATION_PERMISSION_REQUEST = 1001
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -28,20 +47,11 @@ class SelectLocationFragment : BaseFragment() {
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
-        // TODO: add the map setup implementation
-        // TODO: zoom to the user location after taking his permission
-        // TODO: add style to the map
-        // TODO: put a marker to location that the user selected
+        val mapFragment = childFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
 
-        // TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
         return binding.root
-    }
-
-    private fun onLocationSelected() {
-        // TODO: When the user confirms on the selected location,
-        //  send back the selected location details to the view model
-        //  and navigate back to the previous fragment to save the reminder and add the geofence
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -49,19 +59,96 @@ class SelectLocationFragment : BaseFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        // TODO: Change the map type based on the user's selection.
         R.id.normal_map -> {
-            true
+            map?.mapType = GoogleMap.MAP_TYPE_NORMAL; true
         }
         R.id.hybrid_map -> {
-            true
+            map?.mapType = GoogleMap.MAP_TYPE_HYBRID; true
         }
         R.id.satellite_map -> {
-            true
+            map?.mapType = GoogleMap.MAP_TYPE_SATELLITE; true
         }
         R.id.terrain_map -> {
-            true
+            map?.mapType = GoogleMap.MAP_TYPE_TERRAIN; true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+
+        enableLocation()
+
+        googleMap.setOnMapClickListener { latLng ->
+            map?.clear()
+            map?.addMarker(MarkerOptions().position(latLng).title("Custom Location"))
+            selectedLatLng = latLng
+            selectedLocationName = "Lat: ${latLng.latitude}, Lng: ${latLng.longitude}"
+        }
+        googleMap.setOnPoiClickListener { poi ->
+            map?.clear()
+            map?.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))
+            selectedLatLng = poi.latLng
+            selectedLocationName = poi.name
+        }
+
+        binding.saveLocationButton.setOnClickListener {
+            if (selectedLatLng != null && selectedLocationName != null) {
+                _viewModel.latitude.value = selectedLatLng!!.latitude
+                _viewModel.longitude.value = selectedLatLng!!.longitude
+                _viewModel.reminderSelectedLocationStr.value = selectedLocationName
+                _viewModel.selectedPOI.value =
+                    poiFromSelection(selectedLatLng!!, selectedLocationName!!)
+                _viewModel.navigationCommand.value = NavigationCommand.Back
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Please select a location first",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun poiFromSelection(latLng: LatLng, name: String) =
+        com.google.android.gms.maps.model.PointOfInterest(latLng, name, name)
+
+    private fun enableLocation() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            map?.isMyLocationEnabled = true
+            map?.uiSettings?.isMyLocationButtonEnabled = true
+            val defaultLatLng = LatLng(52.5124494,13.3742682)
+            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLatLng, 15f))
+        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                enableLocation()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Location permission denied. Cannot display user location on map.",
+                    Toast.LENGTH_LONG
+                ).show()
+                binding.saveLocationButton.isEnabled = false
+            }
+        } else {
+            Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 }
