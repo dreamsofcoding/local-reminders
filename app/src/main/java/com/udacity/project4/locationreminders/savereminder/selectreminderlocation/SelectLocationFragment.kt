@@ -8,12 +8,13 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -31,9 +32,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private var map: GoogleMap? = null
     private var selectedLatLng: LatLng? = null
     private var selectedLocationName: String? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val LOCATION_PERMISSION_REQUEST = 1001
 
+    var userLatLng = LatLng(52.5124494, 13.3742682)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -46,6 +49,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(binding.root.context)
 
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -62,20 +67,25 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         R.id.normal_map -> {
             map?.mapType = GoogleMap.MAP_TYPE_NORMAL; true
         }
+
         R.id.hybrid_map -> {
             map?.mapType = GoogleMap.MAP_TYPE_HYBRID; true
         }
+
         R.id.satellite_map -> {
             map?.mapType = GoogleMap.MAP_TYPE_SATELLITE; true
         }
+
         R.id.terrain_map -> {
             map?.mapType = GoogleMap.MAP_TYPE_TERRAIN; true
         }
+
         else -> super.onOptionsItemSelected(item)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        binding.saveLocationButton.isEnabled = false
 
         enableLocation()
 
@@ -84,12 +94,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map?.addMarker(MarkerOptions().position(latLng).title("Custom Location"))
             selectedLatLng = latLng
             selectedLocationName = "Lat: ${latLng.latitude}, Lng: ${latLng.longitude}"
+            enableSaveButton()
         }
         googleMap.setOnPoiClickListener { poi ->
             map?.clear()
             map?.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))
             selectedLatLng = poi.latLng
             selectedLocationName = poi.name
+            enableSaveButton()
         }
 
         binding.saveLocationButton.setOnClickListener {
@@ -110,6 +122,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    private fun enableSaveButton() {
+        binding.saveLocationButton.isEnabled = true
+    }
+
     private fun poiFromSelection(latLng: LatLng, name: String) =
         com.google.android.gms.maps.model.PointOfInterest(latLng, name, name)
 
@@ -118,14 +134,23 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        userLatLng = LatLng(location.latitude, location.longitude)
+                    }
+                    map?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
+                }
+
             map?.isMyLocationEnabled = true
             map?.uiSettings?.isMyLocationButtonEnabled = true
-            val defaultLatLng = LatLng(52.5124494,13.3742682)
-            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLatLng, 15f))
+
         } else {
             ActivityCompat.requestPermissions(
                 requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ),
                 LOCATION_PERMISSION_REQUEST
             )
         }
@@ -150,5 +175,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT)
                 .show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        enableLocation()
     }
 }

@@ -7,6 +7,8 @@
         <variable
             name="viewModel"
             type="com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel" />
+
+        <import type="android.view.View"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -52,17 +54,27 @@
             app:layout_constraintTop_toBottomOf="@id/reminderDescription" />
 
         <TextView
-            android:id="@+id/selectedLocation"
-            android:layout_width="wrap_content"
+            android:id="@+id/selectedLatitude"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/margin_normal"
-            android:layout_marginRight="@dimen/margin_normal"
-            android:text="@{viewModel.reminderSelectedLocationStr}"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="32dp"
+            android:text='@{viewModel.latitude != null ? "Lat: " + String.valueOf(viewModel.latitude) : ""}'
             android:textColor="@color/black"
-            app:layout_constraintBottom_toBottomOf="@id/selectLocation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/selectLocation"
-            tools:text="Location" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/selectLocation"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+            android:id="@+id/selectedLongitude"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:text='@{viewModel.longitude != null ? "Long: " + String.valueOf(viewModel.longitude) : ""}'
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/selectedLatitude"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/saveReminder"
