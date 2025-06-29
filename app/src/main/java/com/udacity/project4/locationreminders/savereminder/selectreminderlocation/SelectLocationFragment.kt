@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -46,6 +48,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             binding.saveLocationButton.isEnabled = false
         }
     }
+
+    private var selectLocationDialog: AlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -154,8 +158,26 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
             enableSaveButton()
 
+            showSelectLocationAlert()
+
         } else {
             locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
+    }
+
+    private fun showSelectLocationAlert() {
+        selectLocationDialog = AlertDialog.Builder(binding.root.context)
+            .setTitle(R.string.select_location)
+            .setMessage(R.string.select_poi)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(true)
+            .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        selectLocationDialog?.dismiss()
     }
 }
