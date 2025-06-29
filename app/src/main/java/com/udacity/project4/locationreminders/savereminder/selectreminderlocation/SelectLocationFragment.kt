@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -34,9 +35,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private var selectedLocationName: String? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    private val LOCATION_PERMISSION_REQUEST = 1001
-
     var userLatLng = LatLng(52.5124494, 13.3742682)
+
+    private val locationLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) enableLocation()
+        else {
+            _viewModel.showSnackBarInt.value = R.string.permission_denied_explanation
+            binding.saveLocationButton.isEnabled = false
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -94,14 +103,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map?.addMarker(MarkerOptions().position(latLng).title("Custom Location"))
             selectedLatLng = latLng
             selectedLocationName = "Lat: ${latLng.latitude}, Lng: ${latLng.longitude}"
-            enableSaveButton()
         }
         googleMap.setOnPoiClickListener { poi ->
             map?.clear()
             map?.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))
             selectedLatLng = poi.latLng
             selectedLocationName = poi.name
-            enableSaveButton()
         }
 
         binding.saveLocationButton.setOnClickListener {
@@ -115,7 +122,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             } else {
                 Toast.makeText(
                     requireContext(),
-                    "Please select a location first",
+                    R.string.select_location,
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -145,40 +152,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map?.isMyLocationEnabled = true
             map?.uiSettings?.isMyLocationButtonEnabled = true
 
-        } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ),
-                LOCATION_PERMISSION_REQUEST
-            )
-        }
-    }
+            enableSaveButton()
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                enableLocation()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Location permission denied. Cannot display user location on map.",
-                    Toast.LENGTH_LONG
-                ).show()
-                binding.saveLocationButton.isEnabled = false
-            }
         } else {
-            Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT)
-                .show()
+            locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        enableLocation()
     }
 }
