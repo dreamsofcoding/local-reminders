@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -25,6 +26,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.utils.GeofencingConstants.GEOFENCE_DEFAULT_RADIUS_IN_METERS
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.UUID
@@ -35,7 +37,17 @@ class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
 
-    private val LOCATION_PERMISSION_REQUEST = 1002
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fine = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val background = permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true
+        if (fine && background) {
+            onSaveClicked()
+        } else {
+            Toast.makeText(requireContext(), getString(R.string.permission_denied_explanation), Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private lateinit var geofencingClient: GeofencingClient
 
@@ -77,10 +89,27 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
-            onSaveClicked()
+            if (hasLocationPermissions()) {
+                onSaveClicked()
+            } else {
+                requestForegroundAndBackgroundLocationPermissions()
+            }
         }
 
-        requestForegroundAndBackgroundLocationPermissions()
+        binding.radiusSlider.value = _viewModel.geofenceRadius.value ?: GEOFENCE_DEFAULT_RADIUS_IN_METERS
+
+        binding.radiusSlider.addOnChangeListener { slider, value, fromUser ->
+            _viewModel.geofenceRadius.value = value
+            binding.radiusValue.text = "${value.toInt()} m"
+        }
+    }
+
+    private fun requestForegroundAndBackgroundLocationPermissions() {
+        var permissionsArray = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        )
+        permissionLauncher.launch(permissionsArray)
     }
 
     @SuppressLint("MissingPermission")
@@ -128,7 +157,7 @@ class SaveReminderFragment : BaseFragment() {
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     private fun addGeofenceForReminder(reminder: ReminderDataItem) {
 
-        if (!foregroundAndBackgroundLocationPermissionApproved()) {
+        if (!hasLocationPermissions()) {
             requestForegroundAndBackgroundLocationPermissions()
             return
         }
@@ -138,7 +167,7 @@ class SaveReminderFragment : BaseFragment() {
             .setCircularRegion(
                 reminder.latitude!!,
                 reminder.longitude!!,
-                100f
+                _viewModel.geofenceRadius.value ?: GEOFENCE_DEFAULT_RADIUS_IN_METERS
             )
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
@@ -176,33 +205,15 @@ class SaveReminderFragment : BaseFragment() {
         _viewModel.onClear()
     }
 
-    private fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
-        val foregroundLocationApproved = (
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(
-                            binding.root.context,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        ))
-        val backgroundPermissionApproved =
-            PackageManager.PERMISSION_GRANTED ==
-                    ActivityCompat.checkSelfPermission(
-                        binding.root.context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    )
-        return foregroundLocationApproved && backgroundPermissionApproved
-    }
+    private fun hasLocationPermissions(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(
+            requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
-    private fun requestForegroundAndBackgroundLocationPermissions() {
-        if (foregroundAndBackgroundLocationPermissionApproved())
-            return
-        var permissionsArray = arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        )
-        val resultCode = LOCATION_PERMISSION_REQUEST
-        ActivityCompat.requestPermissions(
-            requireActivity(),
-            permissionsArray,
-            resultCode
-        )
+        val background = ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+        return fine && background
     }
 }

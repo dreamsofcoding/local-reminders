@@ -20,6 +20,8 @@
             android:id="@+id/reminderTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:hint="@string/reminder_title"
             android:text="@={viewModel.reminderTitle}"
             app:layout_constraintEnd_toEndOf="parent"
@@ -30,6 +32,8 @@
             android:id="@+id/reminderDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:gravity="start"
             android:hint="@string/reminder_desc"
             android:lines="10"
@@ -42,6 +46,8 @@
             android:id="@+id/selectLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:drawableStart="@drawable/ic_location"
@@ -74,6 +80,43 @@
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/selectedLatitude"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
+        <TextView
+            android:id="@+id/radiusLabel"
+            android:layout_width="0dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_height="wrap_content"
+            android:text="@string/radius_label"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/selectedLongitude"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+            android:id="@+id/radiusValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text='@{String.valueOf(viewModel.geofenceRadius.intValue()) + ` m`}'
+            app:layout_constraintTop_toBottomOf="@id/radiusLabel"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/radiusSlider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:valueFrom="50"
+            android:valueTo="500"
+            android:stepSize="50"
+            app:layout_constraintTop_toBottomOf="@id/radiusValue"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
