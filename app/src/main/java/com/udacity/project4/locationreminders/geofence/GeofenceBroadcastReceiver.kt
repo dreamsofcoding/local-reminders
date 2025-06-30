@@ -18,31 +18,27 @@ import com.google.android.gms.location.GeofencingEvent
  */
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
-    companion object {
-        const val ACTION_GEOFENCE_EVENT =
-            "com.udacity.project4.locationreminders.ACTION_GEOFENCE_EVENT"
-        const val EXTRA_GEOFENCE_ID = "GEOFENCE_ID"
-    }
-
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != ACTION_GEOFENCE_EVENT) return
-
+        Log.d("GEOFENCE_DBG", "Receiver got intent: ${intent.action}")
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
-
         if (geofencingEvent == null) {
+            Log.e("GEOFENCE_DBG", "GeofencingEvent was null")
             return
         }
 
-        if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            val triggeringGeofences = geofencingEvent.triggeringGeofences
-            if (triggeringGeofences?.isNotEmpty() == true) {
-                val geofenceId = triggeringGeofences[0].requestId
-
-                val serviceIntent = Intent(context, GeofenceTransitionsJobIntentService::class.java).apply {
-                    putExtra(EXTRA_GEOFENCE_ID, geofenceId)
-                }
-                GeofenceTransitionsJobIntentService.enqueueWork(context, serviceIntent)
-            }
+        if (geofencingEvent.hasError()) {
+            Log.e("GEOFENCE", "Geofence error code: ${geofencingEvent.errorCode}")
+            return
         }
+        Log.d("GEOFENCE", "Geofence transition received: ${geofencingEvent.triggeringGeofences?.map{it.requestId}}")
+
+
+//        if (geofencingEvent.geofenceTransition ==
+//            Geofence.GEOFENCE_TRANSITION_DWELL
+////            Geofence.GEOFENCE_TRANSITION_ENTER
+//            ) {
+//            GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
+//        }
+        GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
     }
 }
