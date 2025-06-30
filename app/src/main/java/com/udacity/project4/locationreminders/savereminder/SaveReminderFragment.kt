@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -42,11 +43,29 @@ class SaveReminderFragment : BaseFragment() {
         val fine = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
         val background = permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true
         if (fine && background) {
-            onSaveClicked()
+            checkNotificationsPermission()
         } else {
-            Toast.makeText(requireContext(), getString(R.string.permission_denied_explanation), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.permission_denied_explanation),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
+
+    private val notifyPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted && hasLocationPermissions()) {
+                onSaveClicked()
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Please enable notifications to get reminders",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
 
     private lateinit var geofencingClient: GeofencingClient
 
@@ -89,14 +108,24 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
-            if (hasLocationPermissions()) {
-                onSaveClicked()
-            } else {
+            if (!hasLocationPermissions()) {
                 requestForegroundAndBackgroundLocationPermissions()
+                return@setOnClickListener
             }
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!hasNotificationPermission()) {
+                    notifyPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    return@setOnClickListener
+                }
+            }
+
+            onSaveClicked()
         }
 
-        binding.radiusSlider.value = _viewModel.geofenceRadius.value ?: GEOFENCE_DEFAULT_RADIUS_IN_METERS
+        binding.radiusSlider.value =
+            _viewModel.geofenceRadius.value ?: GEOFENCE_DEFAULT_RADIUS_IN_METERS
 
         binding.radiusSlider.addOnChangeListener { slider, value, fromUser ->
             _viewModel.geofenceRadius.value = value
@@ -170,7 +199,9 @@ class SaveReminderFragment : BaseFragment() {
             )
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(
-                Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_DWELL)
+                Geofence.GEOFENCE_TRANSITION_ENTER
+//                        or Geofence.GEOFENCE_TRANSITION_DWELL
+            )
             .build()
 
         val request = GeofencingRequest.Builder()
@@ -185,9 +216,11 @@ class SaveReminderFragment : BaseFragment() {
                     binding.root.context,
                     "Geofence added for ${reminder.location}", Toast.LENGTH_SHORT
                 ).show()
-                Log.d("GEOFENCE_DBG", "Geofence added: id=${reminder.id}, " +
-                        "lat=${reminder.latitude}, lon=${reminder.longitude}, " +
-                        "radius=${_viewModel.geofenceRadius.value}")
+                Log.d(
+                    "GEOFENCE_DBG", "Geofence added: id=${reminder.id}, " +
+                            "lat=${reminder.latitude}, lon=${reminder.longitude}, " +
+                            "radius=${_viewModel.geofenceRadius.value}"
+                )
             }
             .addOnFailureListener { e ->
                 Toast.makeText(
@@ -215,9 +248,25 @@ class SaveReminderFragment : BaseFragment() {
         ) == PackageManager.PERMISSION_GRANTED
 
         val background = ContextCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+            requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
         return fine && background
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        val notifications = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
+        return notifications
+    }
+
+    private fun checkNotificationsPermission() {
+
     }
 }
