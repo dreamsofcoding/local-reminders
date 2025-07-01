@@ -43,7 +43,7 @@ class SaveReminderFragment : BaseFragment() {
         val fine = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
         val background = permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true
         if (fine && background) {
-            checkNotificationsPermission()
+            onSaveClicked()
         } else {
             Toast.makeText(
                 requireContext(),
@@ -52,19 +52,6 @@ class SaveReminderFragment : BaseFragment() {
             ).show()
         }
     }
-
-    private val notifyPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (granted && hasLocationPermissions()) {
-                onSaveClicked()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Please enable notifications to get reminders",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
 
 
     private lateinit var geofencingClient: GeofencingClient
@@ -112,15 +99,6 @@ class SaveReminderFragment : BaseFragment() {
                 requestForegroundAndBackgroundLocationPermissions()
                 return@setOnClickListener
             }
-
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (!hasNotificationPermission()) {
-                    notifyPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    return@setOnClickListener
-                }
-            }
-
             onSaveClicked()
         }
 
@@ -179,7 +157,6 @@ class SaveReminderFragment : BaseFragment() {
 
         addGeofenceForReminder(reminder)
         _viewModel.validateAndSaveReminder(reminder)
-
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -200,7 +177,6 @@ class SaveReminderFragment : BaseFragment() {
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(
                 Geofence.GEOFENCE_TRANSITION_ENTER
-//                        or Geofence.GEOFENCE_TRANSITION_DWELL
             )
             .build()
 
@@ -254,19 +230,5 @@ class SaveReminderFragment : BaseFragment() {
         return fine && background
     }
 
-    private fun hasNotificationPermission(): Boolean {
-        val notifications = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
 
-        return notifications
-    }
-
-    private fun checkNotificationsPermission() {
-
-    }
 }
