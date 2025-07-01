@@ -44,4 +44,5 @@
     <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call.</string>
     <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
     <string name="reminder_location_map_snapshot">Reminder Location Map Snapshot</string>
+    <string name="please_enable_notifications_to_get_reminders">Please enable notifications to get reminders</string>
 </resources>

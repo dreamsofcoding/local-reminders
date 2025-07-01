@@ -7,7 +7,6 @@ import android.view.*
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -18,7 +17,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -36,8 +35,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private var selectedLatLng: LatLng? = null
     private var selectedLocationName: String? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
     var userLatLng = LatLng(52.5124494, 13.3742682)
+    private val ZOOM_LEVEL = 15F
 
     private val locationLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -102,19 +101,32 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         enableLocation()
 
-        googleMap.setOnMapClickListener { latLng ->
-            map?.clear()
-            map?.addMarker(MarkerOptions().position(latLng).title("Custom Location"))
+        onLocationClicked(map)
+
+        onPoiClicked(map)
+
+        setClickListener()
+    }
+
+    private fun onLocationClicked(map: GoogleMap?) {
+        map?.setOnMapClickListener { latLng ->
+            map.clear()
+            map.addMarker(MarkerOptions().position(latLng).title(getString(R.string.dropped_pin)))
             selectedLatLng = latLng
-            selectedLocationName = "Lat: ${latLng.latitude}, Lng: ${latLng.longitude}"
+            selectedLocationName = String.format(getString(R.string.lat_long_snippet), latLng.latitude, latLng.longitude)
         }
-        googleMap.setOnPoiClickListener { poi ->
-            map?.clear()
-            map?.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))
+    }
+
+    private fun onPoiClicked(map: GoogleMap?) {
+        map?.setOnPoiClickListener { poi ->
+            map.clear()
+            map.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))
             selectedLatLng = poi.latLng
             selectedLocationName = poi.name
         }
+    }
 
+    private fun setClickListener() {
         binding.saveLocationButton.setOnClickListener {
             if (selectedLatLng != null && selectedLocationName != null) {
                 _viewModel.latitude.value = selectedLatLng!!.latitude
@@ -138,7 +150,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun poiFromSelection(latLng: LatLng, name: String) =
-        com.google.android.gms.maps.model.PointOfInterest(latLng, name, name)
+        PointOfInterest(latLng, name, name)
 
     private fun enableLocation() {
         if (ContextCompat.checkSelfPermission(
@@ -150,7 +162,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     if (location != null) {
                         userLatLng = LatLng(location.latitude, location.longitude)
                     }
-                    map?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
+                    map?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, ZOOM_LEVEL))
                 }
 
             map?.isMyLocationEnabled = true

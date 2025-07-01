@@ -32,7 +32,7 @@ class ReminderListFragment : BaseFragment() {
             if (!granted) {
                 Toast.makeText(
                     requireContext(),
-                    "Please enable notifications to get reminders",
+                    getString(R.string.please_enable_notifications_to_get_reminders),
                     Toast.LENGTH_LONG
                 ).show()
             }

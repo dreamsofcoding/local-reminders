@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text='@{String.format(@string/lat_long_snippet, item.latitude, item.longitude)}'
-                android:textColor="@color/colorAccent"
+                android:textColor="@color/colorPrimaryDark"
                 android:textSize="@dimen/text_size_small"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

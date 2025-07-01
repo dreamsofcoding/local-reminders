@@ -40,8 +40,7 @@ fun sendNotification(context: Context, reminderDataItem: ReminderDataItem) {
         .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     // We need to create a NotificationChannel associated with our CHANNEL_ID before sending a notification.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-        && notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null
+    if (notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null
     ) {
         val name = context.getString(R.string.app_name)
         val channel = NotificationChannel(

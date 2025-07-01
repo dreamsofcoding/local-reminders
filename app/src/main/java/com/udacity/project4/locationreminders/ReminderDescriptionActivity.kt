@@ -3,6 +3,8 @@ package com.udacity.project4.locationreminders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.AttributeSet
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
@@ -33,11 +35,9 @@ class ReminderDescriptionActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, layoutId)
         val data = intent.getSerializableExtra(EXTRA_ReminderDataItem) as ReminderDataItem
         binding.apply {
-
-            val locationString = String.format(getString(R.string.lat_long_snippet), data.latitude, data.longitude)
             titleReminderText.text = data.title
             descriptionText.text = data.description
-            locationText.text = locationString
+            locationText.text = data.location ?: String.format(getString(R.string.lat_long_snippet), data.latitude, data.longitude)
 
         }
     }

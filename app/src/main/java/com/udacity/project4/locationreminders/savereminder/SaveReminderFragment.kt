@@ -53,12 +53,13 @@ class SaveReminderFragment : BaseFragment() {
         }
     }
 
-
     private lateinit var geofencingClient: GeofencingClient
+
+    private val PENDING_ACTION = "ACTION_GEOFENCE_EVENT"
 
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(binding.root.context, GeofenceBroadcastReceiver::class.java).apply {
-            action = "ACTION_GEOFENCE_EVENT"
+            action = PENDING_ACTION
             `package` = binding.root.context.applicationContext.packageName
         }
         PendingIntent.getBroadcast(
@@ -90,6 +91,12 @@ class SaveReminderFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = this
 
+        setListeners()
+
+        setUpRadius()
+    }
+
+    private fun setListeners() {
         binding.selectLocation.setOnClickListener {
             navigateToSelectLocation()
         }
@@ -101,7 +108,9 @@ class SaveReminderFragment : BaseFragment() {
             }
             onSaveClicked()
         }
+    }
 
+    private fun setUpRadius() {
         binding.radiusSlider.value =
             _viewModel.geofenceRadius.value ?: GEOFENCE_DEFAULT_RADIUS_IN_METERS
 
@@ -129,17 +138,11 @@ class SaveReminderFragment : BaseFragment() {
 
         when {
             title.isNullOrBlank() -> {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.err_enter_title), Toast.LENGTH_SHORT
-                ).show()
+                showTitleToast()
             }
 
             location.isNullOrBlank() || latitude == null || longitude == null -> {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.err_select_location), Toast.LENGTH_SHORT
-                ).show()
+                showLocationToast()
             }
         }
 
@@ -157,6 +160,20 @@ class SaveReminderFragment : BaseFragment() {
 
         addGeofenceForReminder(reminder)
         _viewModel.validateAndSaveReminder(reminder)
+    }
+
+    private fun showTitleToast() {
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.err_enter_title), Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun showLocationToast() {
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.err_select_location), Toast.LENGTH_SHORT
+        ).show()
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)

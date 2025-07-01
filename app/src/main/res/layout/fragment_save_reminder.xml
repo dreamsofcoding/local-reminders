@@ -115,6 +115,8 @@
             android:layout_margin="@dimen/margin_normal"
             android:fadeVisible="@{!viewModel.showLoading.booleanValue()}"
             android:src="@drawable/ic_save"
+            android:backgroundTint="@color/colorPrimary"
+            android:tint="@color/white"
             app:fabSize="normal"
             app:layout_anchorGravity="bottom|right|end"
             app:layout_constraintBottom_toBottomOf="parent"
