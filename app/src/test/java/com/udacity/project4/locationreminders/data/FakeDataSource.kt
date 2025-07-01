@@ -5,23 +5,33 @@ import com.udacity.project4.locationreminders.data.dto.Result
 
 //Use FakeDataSource that acts as a test double to the LocalDataSource
 class FakeDataSource : ReminderDataSource {
+    var reminderData: MutableList<ReminderDTO> = mutableListOf()
 
-//    TODO: Create a fake data source to act as a double to the real data source
+    var isInternalError = false
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
-        TODO("Return the reminders")
+        if (isInternalError) {
+            return Result.Error("Internal errors while getting reminders")
+        }
+        return Result.Success(mutableListOf())
     }
 
     override suspend fun saveReminder(reminder: ReminderDTO) {
-        TODO("save the reminder")
+        reminderData.add(reminder)
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {
-        TODO("return the reminder with the id")
+        if (isInternalError) return Result.Error("Internal errors while getting reminders")
+        val item = reminderData.run {
+            val data = this.find { it.id == id }
+            data
+        } ?: return Result.Error("Not found reminder")
+
+        return Result.Success(item)
     }
 
     override suspend fun deleteAllReminders() {
-        TODO("delete all the reminders")
+        reminderData.clear()
     }
 
 
