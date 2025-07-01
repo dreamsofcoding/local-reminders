@@ -26,7 +26,7 @@ buildscript {
         junitVersion = '4.13.2'
         androidXTestCoreVersion = '1.6.1'
         robolectricVersion = '4.15.1'
-        androidXTestExtKotlinRunnerVersion = '1.6.2'
+        androidXTestExtKotlinRunnerVersion = '1.2.1'
         archTestingVersion = '2.2.0'
         androidXTestRulesVersion = '1.6.1'
         espressoVersion = '3.6.1'
@@ -40,8 +40,8 @@ buildscript {
     }
 
     repositories {
-        google()
         mavenCentral()
+        google()
     }
 
     dependencies {
