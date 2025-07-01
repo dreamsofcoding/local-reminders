@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="@{item.location}"
+                android:text='@{String.format(@string/lat_long_snippet, item.latitude, item.longitude)}'
                 android:textColor="@color/colorAccent"
                 android:textSize="@dimen/text_size_small"
                 app:layout_constraintBottom_toBottomOf="parent"

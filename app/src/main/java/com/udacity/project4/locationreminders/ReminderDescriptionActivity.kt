@@ -31,6 +31,14 @@ class ReminderDescriptionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val layoutId = R.layout.activity_reminder_description
         binding = DataBindingUtil.setContentView(this, layoutId)
-        // TODO: Add the implementation of the reminder details
+        val data = intent.getSerializableExtra(EXTRA_ReminderDataItem) as ReminderDataItem
+        binding.apply {
+
+            val locationString = String.format(getString(R.string.lat_long_snippet), data.latitude, data.longitude)
+            titleReminderText.text = data.title
+            descriptionText.text = data.description
+            locationText.text = locationString
+
+        }
     }
 }

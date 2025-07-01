@@ -60,26 +60,15 @@
             app:layout_constraintTop_toBottomOf="@id/reminderDescription" />
 
         <TextView
-            android:id="@+id/selectedLatitude"
+            android:id="@+id/selectedLatLng"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginStart="32dp"
-            android:text='@{viewModel.latitude != null ? "Lat: " + String.valueOf(viewModel.latitude) : ""}'
+            android:text='@{viewModel.latitude != null ? String.format(@string/lat_long_snippet, viewModel.latitude, viewModel.longitude) : ""}'
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/selectLocation"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <TextView
-            android:id="@+id/selectedLongitude"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:text='@{viewModel.longitude != null ? "Long: " + String.valueOf(viewModel.longitude) : ""}'
-            android:textColor="@color/black"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/selectedLatitude"
             app:layout_constraintEnd_toEndOf="parent"/>
 
 
@@ -92,7 +81,7 @@
             android:layout_height="wrap_content"
             android:text="@string/radius_label"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/selectedLongitude"
+            app:layout_constraintTop_toBottomOf="@id/selectedLatLng"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
