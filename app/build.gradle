@@ -72,14 +72,14 @@ dependencies {
 
     // Room dependencies
     implementation "androidx.room:room-runtime:$roomVersion"
-    implementation 'androidx.work:work-runtime-ktx:2.10.2'
     kapt "androidx.room:room-compiler:$roomVersion"
         // Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:$roomVersion"
 
     // Koin
     implementation "io.insert-koin:koin-android:$koinVersion"
-    androidTestImplementation("io.insert-koin:koin-test:3.1.6")
+    testImplementation "io.insert-koin:koin-test:$koinVersion"
+    androidTestImplementation "io.insert-koin:koin-test-junit4:$koinVersion"
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$junitVersion"
@@ -94,6 +94,9 @@ dependencies {
     testImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
     testImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     testImplementation "androidx.test:rules:$androidXTestRulesVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
     // AndroidX Test - Instrumented testing
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
@@ -126,3 +129,5 @@ dependencies {
     implementation "com.google.firebase:firebase-auth-ktx:"
     implementation "com.firebaseui:firebase-ui-auth:$firebaseUiAuthVersion"
 }
+
+apply plugin: 'com.google.gms.google-services'
